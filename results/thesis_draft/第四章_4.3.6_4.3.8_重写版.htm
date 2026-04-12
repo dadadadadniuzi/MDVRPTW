@@ -1,0 +1,178 @@
+<body style="margin:0pt; padding:0pt; background-color:#ffffff;">
+  <p style="margin:0pt; margin-top:11pt; margin-bottom:11pt; line-height:23pt; font-size:12pt; font-family:黑体; text-align:left;">
+    4.3.6 基于DBO在线调参驱动的超启发式蚁群算法（Improve 5）（核心创新2）
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在 Improve 1 至 Improve 4 的基础上，本文进一步提出基于 DBO 在线调参驱动的超启发式蚁群算法，即 Improve 5。与前面几个版本相比，Improve 5 不再只针对单一局部机制进行增强，而是从“启发函数设计、种群分工、信息素强化和参数适配”四个层面同时构建改进框架。正因如此，该算法在本文第二阶段所有候选算法中表现最好，也是本文在分解法路径优化部分的核心创新算法。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    前几版算法的改进可以概括为：Improve 1 主要解决种群角色单一问题；Improve 2 与 Improve 3 主要解决启发信息不足和信息素过早塌缩问题；Improve 4 则尝试利用 DBO 在外层搜索更优参数。但是，这几版算法仍然存在一个共同局限，即改进点虽然有效，却较多是“分块增强”，尚未形成较完整的协同结构。例如，Improve 1 强化了种群分工，但启发函数仍然偏基础；Improve 3 加入了自适应挥发率与 MMAS 截断，但参数本身仍需人为经验设定；Improve 4 虽然采用 DBO 自动调参，但其调参机制与内层路径构造之间仍属于相对松散的串联关系。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    Improve 5 的设计思路是将 DBO 的参数搜索能力与 ACO 的路径构造能力更紧密地结合起来，使算法在每个车场求解前都能针对当前子问题自动搜索一组更合适的参数组合。这样做的直接原因在于，不同车场对应的客户规模、客户空间分布、时间窗紧张程度和车辆结构均不相同，若仍采用固定参数，则很难保证同一组参数在所有子问题上都有效。因此，Improve 5 将参数本身视为可优化对象，并由 DBO 负责搜索。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在外层 DBO 中，个体表示蚁群算法的一组参数向量。设参数向量记为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\theta=(\alpha,\beta,\rho,\mu,\lambda,e) \qquad (4.26)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其中，$\alpha$ 和 $\beta$ 分别表示信息素和启发函数的重要程度，$\rho$ 表示信息素挥发率，$\mu$ 表示随机变异概率，$\lambda$ 表示时间窗惩罚系数，$e$ 表示精英信息素强化系数。对于每一组参数向量，系统并不直接用一次长迭代求解结果评价，而是采用多次短预算试跑的方式取平均成本作为适应度值，以减弱蚁群算法随机波动对调参结果的影响。外层适应度可表示为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$G(\theta)=\frac{1}{M}\sum_{u=1}^{M} f^{(u)}(\theta) \qquad (4.27)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其中，$f^{(u)}(\theta)$ 表示第 $u$ 次短预算试跑下得到的路径成本。采用该方式后，DBO 所得到的参数组合不再只适应一次偶然的“好运气”解，而是更偏向于选择整体表现更稳健的参数。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在内层蚁群算法中，Improve 5 进一步强化多因子启发函数。与前面版本相比，该算法在状态转移阶段同时考虑距离、时间窗紧迫度和容量匹配度，具体写为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\eta_{ij}=\frac{1}{d_{ij}+\varepsilon}\left(1+\delta_1\cdot \mathrm{urgency}_j\right)\left(1+\delta_2\cdot \mathrm{fit}_{jr}\right) \qquad (4.28)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其中，$\mathrm{urgency}_j$ 表示客户 $j$ 的时间窗紧迫度，$\mathrm{fit}_{jr}$ 表示客户需求与当前车辆剩余容量之间的匹配程度。由此，Improve 5 在路径构造时不再仅按距离选择下一客户，而是更倾向于优先选择“既紧迫、又适合当前车辆服务”的客户，从而提升可行路径的构造质量。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在种群结构上，Improve 5 继续保留 Improve 1 中引入的等级制度思想，将蚂蚁划分为滚球组、育雏组、小蜣螂组和带扰动的探索组，从而维持开发与探索之间的平衡。在信息素更新阶段，则采用“代内精英筛选 + 滚球组加权强化 + 全局最优追加强化”的三层机制。若第 $k$ 只蚂蚁的路径成本为 $f_k$，则其信息素基础增量仍可表示为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\Delta \tau_{ij}^{k}=\frac{Q}{f_k} \qquad (4.29)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    若该蚂蚁属于滚球组，或者其路径为当前代最优路径，则进一步乘以对应强化系数。由此，算法能够在保留全局探索能力的同时，更快速地积累高质量路径结构。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    从结果上看，Improve 5 是本文第二阶段单次实验表现最好的算法。根据现有对比表，Improve 5 的总里程为 450.95，总成本为 461.67；相比 Improve 1 的总成本 463.71，Improve 3 的总成本 464.46，以及 Improve 4 的总成本 490.49，Improve 5 均表现出更明显的优势。尤其是与前一代较为成熟的 Improve 3 相比，Improve 5 在总成本上继续下降，说明外层 DBO 在线调参机制与多因子启发函数的组合确实提升了路径求解质量。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    如果进一步结合复现实验结果进行观察，Improve 5 的平均成本为 465.834，方差为 20.928。虽然它在波动性上并不是最小的，但无论单次最优值还是多次复现均值，都优于 Improve 1、Improve 3 等前序版本。这说明 Improve 5 的优势不是偶然的单次结果，而是综合性能上的领先。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    因此，Improve 5 之所以能够优于前几种算法，主要有三个原因。第一，它不再只依赖人工经验设置参数，而是通过 DBO 为每个车场子问题自动搜索更匹配的参数组合。第二，它在启发函数中同时考虑距离、时间窗紧迫度和容量匹配度，使路径构造更贴近 VRPTW 问题本身。第三，它将等级制度、精英强化和参数自适应三种机制统一到了一个框架内，因而能够在搜索过程中更好地兼顾探索和开发。正因为这些特点，本文将 Improve 5 作为第二阶段最具代表性的核心算法。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其文字版流程可以总结为：首先由 DBO 在外层生成若干组蚁群参数向量，并采用多次短预算运行计算各组参数的平均适应度；其次选择适应度最好的参数组合作为当前车场子问题的蚁群控制参数；然后在内层蚁群算法中，利用多因子启发函数和异质蚂蚁分工进行路径构造；接着根据代内精英和全局最优路径执行信息素强化；最后在完成若干迭代后输出当前车场的最优路径结果。由此可见，Improve 5 的核心并不是单一某个局部技巧，而是“外层智能调参 + 内层高质量构解”的协同结构。
+  </p>
+
+  <p style="margin:0pt; margin-top:11pt; margin-bottom:11pt; line-height:23pt; font-size:12pt; font-family:黑体; text-align:left;">
+    4.3.7 多蚁群协同与双信息素机制设计（Improve 6 与 Improve 6.2）
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在 Improve 5 取得较好结果后，本文进一步尝试从多蚁群系统角度提升算法性能，并设计了 Improve 6 与 Improve 6.2。这里所谓“多蚁群系统”，并不是简单地把一群蚂蚁分成若干小组同时运行，而是为不同群体赋予不同的搜索目标、不同的信息素记忆以及不同的交流方式，使其在同一问题上形成分工搜索结构。这样设计的出发点是：单一蚁群虽然容易集中强化当前较优路径，但也更容易出现早熟收敛；若让若干蚁群分别从不同偏好出发构造路径，再在适当时机进行信息交换，则有可能同时兼顾搜索深度与搜索广度。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在 Improve 6 中，本文设置了成本群和车辆群两类蚁群，并分别维护两套信息素矩阵。成本群以总成本最小为主要目标，车辆群则在评价中增加车辆使用数量惩罚，希望在成本与车辆数之间取得折中。也就是说，这里不是“两个群搜索同一个指标”，而是“两个群分别从不同评价尺度看待同一组路径”。设成本群构造得到的解为 $S^{c}$，车辆群构造得到的解为 $S^{v}$，则它们对应的评价函数可写为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$f^{c}(S)=C(S) \qquad (4.30)$$
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$f^{v}(S)=C(S)+\gamma \cdot m(S) \qquad (4.31)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其中，$C(S)$ 表示路径总成本，$m(S)$ 表示使用车辆数，$\gamma$ 为车辆数量惩罚系数。由式（4.30）和式（4.31）可知，成本群更强调直接压缩总成本，而车辆群更倾向于优先构造车辆数较少、装载更集中的路径方案。两者虽然目标不同，但都服务于第二阶段车场内 VRPTW 的总体优化，因此其核心思想是利用“目标差异”制造搜索差异。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在信息记忆层面，本文分别为两类蚁群维护独立的信息素矩阵 $\tau^{c}$ 和 $\tau^{v}$。这意味着成本群只强化对“低成本路径”有利的边，车辆群则强化对“少车辆方案”有利的边。与基础蚁群算法只有一套共享信息素相比，这种双信息素结构能保留两种搜索偏好的历史记忆，避免不同目标在同一张信息素矩阵中相互覆盖。若分别记两群的信息素矩阵为 $\tau^{c}$ 和 $\tau^{v}$，则其群间交流可表示为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\tau^{c}\leftarrow (1-\omega)\tau^{c}+\omega\tau^{v},\qquad \tau^{v}\leftarrow (1-\omega)\tau^{v}+\omega\tau^{c} \qquad (4.32)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    式（4.32）中的 $\omega$ 表示群间交流比例。当 $\omega$ 较小时，两类蚁群主要保留各自搜索特性；当 $\omega$ 较大时，两群之间共享的信息更多，系统更倾向于形成一致的搜索方向。由此可见，多蚁群系统的关键并不只是“分群”，更在于“何时交流、交流多少、交流什么信息”。在 Improve 6 中，交流比例通常取固定值，因此其特点是结构清晰、实现直接，但灵活性仍然有限。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在 Improve 6.2 中，本文进一步将 DBO 控制机制引入多蚁群系统内部，使外层 DBO 用于调节宏观参数，内层控制向量用于动态调整不同蚁群的 $\alpha$、$\beta$ 和信息交流比例，从而形成更复杂的双层混合框架。若将内层控制向量记为
+    $\mathbf{z}=(\alpha_c,\beta_c,\alpha_v,\beta_v,\omega)$，则不同群体在状态转移时可以依据各自参数进行路径构造，系统也可以根据当前搜索效果动态调节交流强度。相较于 Improve 6，Improve 6.2 在结构上更“像融合算法”，其目标是通过更多层次的控制机制增强算法的稳定性与自适应能力。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    从求解流程来看，多蚁群系统可以理解为“并行构解 + 分别更新 + 定期交流”的三阶段循环。首先，成本群和车辆群分别基于各自的信息素矩阵独立构造完整路径；其次，两群依据自身评价函数分别筛选本群优质解，并更新对应的信息素矩阵；最后，再按既定交流规则将一部分优质结构从一群传递到另一群。该过程使系统既能在群内保持目标导向的搜索，又能在群间共享阶段性有效经验，因此比单蚁群更强调结构化协同。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    但是，从实际结果来看，这两种算法并没有超过 Improve 5。根据当前实验结果，Improve 6 的总里程为 455.06，总成本为 467.46；Improve 6.2 的总里程为 451.08，总成本为 461.79。可以看到，Improve 6 明显劣于 Improve 5，而 Improve 6.2 虽然已经非常接近 Improve 5，但在单次最优值上仍然高出 0.12。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    若进一步结合复现实验结果分析，Improve 6.2 的平均成本为 470.195，方差为 8.423。这个结果说明它的波动比 Improve 5 更小，稳定性较好，但其均值仍然高于 Improve 5 的 465.834。换言之，Improve 6.2 的优势在于结果更稳，而不是结果更优；从论文第二阶段主打算法的角度看，当前仍应优先选择 Improve 5。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    造成这种现象的原因，主要在于多蚁群系统虽然增强了搜索多样性，但也引入了更高的结构复杂度和更多的参数耦合。一方面，不同蚁群之间的信息交流虽然能够共享经验，但也会削弱 Improve 5 那种对当前最优方向的集中强化。Improve 5 的搜索压力始终集中在“如何进一步压缩成本”这一主目标上，而多蚁群系统需要同时维持群内优化与群间协调，这会分散一部分优化力度。另一方面，外层和内层同时引入 DBO 控制后，参数耦合关系变得更加复杂，在有限计算预算下，算法的一部分搜索能力被消耗在控制层优化上，未必能完全转化为路径质量提升。也就是说，多蚁群系统更像是用更复杂的结构换取更丰富的搜索行为，但在本文算例中，这种“结构收益”尚不足以完全覆盖其“控制成本”。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其文字版流程可概括为：首先将蚁群划分为成本群和车辆群，分别初始化两套信息素矩阵；其次由两类蚂蚁依据各自目标函数独立构造路径解，并分别计算 $f^c$ 与 $f^v$；然后在群内执行优质解筛选和信息素更新，使低成本结构与少车辆结构分别得到强化；接着根据式（4.32）进行群间信息交流，在 Improve 6.2 中还需要利用 DBO 动态修正控制向量 $\mathbf{z}$；最后重复上述过程直到达到终止条件，并输出全局最优路径。整体来看，这类算法的核心优势在于多目标偏好下的协同搜索，但其复杂结构在当前问题上并未带来超过 Improve 5 的综合收益。
+  </p>
+
+  <p style="margin:0pt; margin-top:11pt; margin-bottom:11pt; line-height:23pt; font-size:12pt; font-family:黑体; text-align:left;">
+    4.3.8 引入异步交流与停滞重启机制的稳健多蚁群系统（Improve 6.3）
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    为了进一步改善 Improve 6 与 Improve 6.2 在搜索停滞和信息利用方面的问题，本文又设计了 Improve 6.3。该算法继续保留多蚁群系统思想，同时加入异步交流机制和停滞重启机制，希望通过更灵活的群间交流和搜索恢复能力提升算法表现。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在 Improve 6.3 中，群间交流比例不再固定，而是随迭代进程动态变化。设当前迭代次数为 $t$，最大迭代次数为 $T$，则交流比例写为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\omega(t)=\omega_{\min}+(\omega_{\max}-\omega_{\min})\frac{t}{T} \qquad (4.31)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    由此，在搜索前期可以保持较低交流比例以保留各群独立探索能力，后期再逐步增强群体间的信息共享。此外，当算法连续若干代没有获得更优解时，Improve 6.3 会触发软重启机制，对信息素矩阵进行回拉，并对控制向量施加扰动。若回拉系数为 $\kappa$，中间信息素水平为 $\tau^{m}$，则重启更新可写为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\tau \leftarrow \kappa \tau +(1-\kappa)\tau^{m} \qquad (4.32)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    从结构上看，Improve 6.3 的设计已经相当完整，它同时融合了多因子启发、精英强化、双蚁群协同、异步交流和停滞响应等机制，因此其理论上的研究价值较高。然而，从实际结果来看，Improve 6.3 的总里程为 457.35，总成本为 470.43，不仅没有超过 Improve 5，甚至也明显劣于 Improve 6.2。也就是说，尽管其机制更复杂，但在当前算例上的单次结果并不理想。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    与 Improve 5 相比，Improve 6.3 没有取得更好结果，原因主要有以下几点。第一，Improve 5 的优势在于结构相对紧凑，改进点集中在对路径质量最直接有效的三个方面：多因子启发、精英强化和 DBO 调参；而 Improve 6.3 引入了过多控制自由度，导致算法在有限预算下难以把每一层机制都调到最优。第二，多蚁群异步交流虽然可以提升搜索多样性，但也可能分散原本集中于主目标的优化压力，使算法在单目标成本压缩上不如 Improve 5 直接有效。第三，停滞重启机制虽然有助于跳出局部最优，但也会在一定程度上破坏已经形成的优质信息素结构，增加搜索波动。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    若与 Improve 6.2 比较，则可以认为 Improve 6.3 在“稳健框架”方向上又向前走了一步，但这种进一步增强并未转化为更低的成本值。Improve 6.2 至少在单次结果上已经接近 Improve 5，而 Improve 6.3 则出现了明显回退。这说明，在当前数据规模和约束结构下，过于复杂的群体控制和交流机制反而会削弱路径求解效率。换言之，对于本文算例而言，算法并不是越复杂越好，能够抓住主要矛盾并把关键机制发挥到位，反而更容易得到优质结果，而这正是 Improve 5 的优势所在。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其文字版流程总结如下：首先初始化成本群和车辆群的信息素矩阵及控制参数；其次按照动态交流比例分别构造两群路径解，并执行信息素更新；然后在搜索停滞时对信息素矩阵进行软重启，同时扰动控制向量；接着继续进行群间异步交流和迭代更新；最后在达到终止条件后输出当前最优路径结果。整体来看，Improve 6.3 在机制设计上比 Improve 6 和 Improve 6.2 更丰富，但从实验结果看，其复杂结构并没有转化为比 Improve 5 更强的综合性能，这也进一步说明了 Improve 5 在当前问题上的优势。
+  </p>
+</body>

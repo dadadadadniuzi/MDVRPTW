@@ -1,0 +1,5 @@
+Whole ACO Summary
+Total routes: 7
+Best total cost: 462.42
+Total distance: 459.66
+Final convergence value: 462.42

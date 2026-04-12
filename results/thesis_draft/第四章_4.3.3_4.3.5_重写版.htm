@@ -1,0 +1,153 @@
+<body style="margin:0pt; padding:0pt; background-color:#ffffff;">
+  <p style="margin:0pt; margin-top:11pt; margin-bottom:11pt; line-height:23pt; font-size:12pt; font-family:黑体; text-align:left;">
+    4.3.3 融合DBO等级制度的异质变异蚁群算法（Improve 1）
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在基础蚁群算法中，所有蚂蚁通常采用相同的参数和相同的搜索逻辑，即整个种群在每一轮迭代中都按照统一的状态转移公式和统一的信息素更新方式进行搜索。这样的做法虽然结构清晰，但在处理车场内带时间窗车辆路径问题时存在明显不足：一方面，种群整体搜索行为较为单一，早期容易因为启发函数过强或信息素积累过快而导致探索范围不足；另一方面，后期蚂蚁又容易集中到少数高信息素边上，从而过早陷入局部最优。为了增强种群多样性，本文在 Improve 1 中引入蜣螂算法中的等级制度思想，将蚁群种群划分为若干类功能不同的个体，以形成异质化搜索机制。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    蜣螂算法的核心特点之一在于，不同个体在种群中承担不同职责。受此启发，本文不再把所有蚂蚁视为完全相同的搜索个体，而是将其划分为滚球组、育雏组、小蜣螂组和偷窃组四类。滚球组的作用类似于追踪当前最优方向的“开发型”个体，强调快速继承已有优质路径；育雏组承担稳定的主体搜索任务，用于维持正常的解构造过程；小蜣螂组更偏向局部贪婪搜索，在构解过程中更重视启发函数而不是历史信息素；偷窃组则保留较强随机扰动能力，用于在种群停滞时打破现有搜索路径结构。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在数学形式上，第 $k$ 只蚂蚁的状态转移概率仍采用蚁群算法的基本框架，但其参数不再对全体个体统一，而由蚂蚁所属等级决定。记第 $k$ 只蚂蚁从节点 $i$ 转移到节点 $j$ 的概率为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$P_{ij}^{k}=\frac{\tau_{ij}^{\alpha_k}\eta_{ij}^{\beta_k}}{\sum\limits_{h\in\Omega_i^k}\tau_{ih}^{\alpha_k}\eta_{ih}^{\beta_k}} \qquad (4.19)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其中，$\alpha_k$ 表示蚂蚁 $k$ 对信息素的敏感程度，$\beta_k$ 表示其对启发函数的敏感程度，$\Omega_i^k$ 表示当前蚂蚁在节点 $i$ 处的可行候选客户集合。对于滚球组，$\alpha_k$ 取值较大而 $\beta_k$ 相对较小，意味着其更倾向于沿着已有高信息素路径前进；对于小蜣螂组，$\alpha_k$ 取值较小而 $\beta_k$ 较大，意味着其更倾向于依赖启发函数进行局部贪婪搜索；对于育雏组，则采用标准参数；对于偷窃组，除了使用基础参数外，还叠加随机变异概率 $\mu_k$，在触发变异时直接绕过式（4.19）的轮盘赌过程，从可行候选集中随机选取下一客户。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    与基础蚁群算法相比，Improve 1 的关键不在于改变某一个单独公式，而在于改变整个种群的组织结构。通过引入多角色机制，算法在同一轮迭代中同时存在“跟随历史优质路径的个体”“执行标准搜索的个体”“进行局部贪婪开发的个体”和“进行随机扰动探索的个体”，从而使搜索过程不再单一。这种异质化的搜索方式有助于在算法前期扩大解空间覆盖范围，在算法后期保持一定的跳出局部最优能力。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在信息素更新阶段，Improve 1 进一步考虑不同等级蚂蚁对信息素的贡献应当存在差异。设第 $k$ 只蚂蚁对应路径成本为 $f_k$，则其在边 $(i,j)$ 上的信息素增量写为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\Delta \tau_{ij}^{k}=\omega_k \frac{Q}{f_k} \qquad (4.20)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    式中，$\omega_k$ 表示不同角色蚂蚁的等级权重。当蚂蚁属于滚球组时，$\omega_k$ 取值较大，使优质路径能够更快速地在种群中传播；当蚂蚁属于其他组别时，$\omega_k$ 保持基础水平。这样的设计思路本质上是“优质解强化”，但与普通精英策略不同，它把强化的依据与蜣螂等级制度结合起来，使高质量路径与高价值个体双重影响信息素更新。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    需要指出的是，Improve 1 的作用更偏向于建立后续改进算法的基础框架。它本身并未引入复杂的参数控制机制，也没有在启发函数中显式加入时间窗紧迫度和容量匹配度等多因子信息，但它完成了一个关键转变：即将蚁群算法从“均质种群”扩展为“异质种群”。后续的 Improve 2、Improve 3、Improve 4 乃至 Improve 5，实际上都建立在这一分工思路之上。因此，在论文结构中，Improve 1 更适合作为后续一系列改进算法的起点来加以介绍。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其文字版流程可概括为：首先初始化信息素矩阵、距离矩阵和可行性检查模块，并按照预设比例将蚂蚁划分为滚球组、育雏组、小蜣螂组和偷窃组；其次在构解阶段，不同组别蚂蚁分别采用对应的参数组合 $\alpha_k$、$\beta_k$ 和变异概率 $\mu_k$ 生成路径；然后根据各蚂蚁路径成本计算适应度，并记录本轮最优路径；接着按照式（4.20）执行差异化信息素更新，对滚球组优质路径赋予更高强化权重；最后进入下一轮迭代，直到达到最大迭代次数。总体来看，Improve 1 的核心作用是利用 DBO 的等级制度思想改善蚁群种群结构，从而提高搜索多样性。
+  </p>
+
+  <p style="margin:0pt; margin-top:11pt; margin-bottom:11pt; line-height:23pt; font-size:12pt; font-family:黑体; text-align:left;">
+    4.3.4 自适应参数、多因子启发与MMAS截断策略（Improve 2 与 Improve 3）
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在 Improve 1 中，算法已经通过异质化种群结构提升了搜索多样性，但仍存在两个重要不足。其一，状态转移中启发函数主要依赖距离信息，对时间窗紧迫程度和容量约束状态的反映不足；其二，尽管滚球组强化策略可以提升优质路径的传播效率，但若没有对信息素积累过程进行进一步控制，算法在后期仍容易出现信息素过度集中、搜索范围迅速收缩的问题。基于上述考虑，本文将 Improve 2 与 Improve 3 设计为一组连续增强策略，分别从参数自适应、多因子启发和信息素边界控制三个方面继续改进蚁群算法。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    Improve 2 的主要工作是引入自适应参数机制和多因子启发函数。对于带时间窗车辆路径问题而言，算法前期更需要探索较大的可行解空间，而后期则更需要围绕已有较优路径进行精细开发。若挥发率始终取固定值，往往难以兼顾这两种需求。因此，Improve 2 将挥发率设计为随迭代过程动态变化的函数。设当前迭代次数为 $t$，最大迭代次数为 $T$，则挥发率写为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\rho(t)=\rho_{\max}-(\rho_{\max}-\rho_{\min})\frac{t}{T} \qquad (4.21)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    通过这一设计，算法在前期采用较大的挥发率，更快地削弱低质量路径留下的信息，从而减少早熟收敛风险；在后期则逐步降低挥发率，使高质量路径的历史记忆得以保留，增强局部开发能力。与固定挥发率策略相比，自适应参数机制使算法搜索行为能够随着迭代阶段自动调整，这也是 Improve 2 相比 Improve 1 的第一项关键提升。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    Improve 2 的第二项关键改进是启发函数的扩展。传统蚁群算法通常只使用距离倒数作为启发函数，即“距离越近，越容易被选择”。然而在本文的车场内 VRPTW 子问题中，客户点的选择不仅取决于距离，还与客户时间窗的紧迫程度、车辆剩余容量是否合适密切相关。为此，本文将启发函数设计为由距离项、时间窗紧迫度项和容量匹配度项共同构成，即：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\eta_{ij}=\frac{1}{d_{ij}+\varepsilon}\left(1+\frac{\gamma_1}{\mathrm{slack}_j+\varepsilon}\right)\left(1+\gamma_2\frac{q_j}{Q_r^{\mathrm{rem}}+\varepsilon}\right) \qquad (4.22)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其中，$\mathrm{slack}_j$ 表示客户 $j$ 的时间窗剩余松弛量，$q_j$ 表示客户需求量，$Q_r^{\mathrm{rem}}$ 表示当前车辆剩余容量，$\gamma_1$ 和 $\gamma_2$ 分别为时间紧迫度权重和容量匹配度权重。由式（4.22）可以看出，当某客户时间窗更紧、且更适合当前车辆剩余容量时，其启发函数值会更大，从而被优先选择。由此，Improve 2 在构解阶段已经开始把“路径可行性”和“后续服务风险”纳入节点选择过程，而不仅仅是几何距离。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在 Improve 2 的基础上，Improve 3 继续从信息素控制层面进行增强。其主要考虑是：即使构解阶段已经更合理，如果信息素在若干轮更新后仍然快速集中在少数边上，则种群仍会失去多样性，算法后期仍可能陷入局部最优。为解决这一问题，Improve 3 引入了 MMAS 最大最小信息素截断机制，对更新后的信息素矩阵执行上下界约束。设信息素上下界分别为 $\tau_{\min}$ 和 $\tau_{\max}$，则更新后的信息素写为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\tau_{ij}\leftarrow \min\{\tau_{\max},\max(\tau_{\min},\tau_{ij})\} \qquad (4.23)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    当某条边上的信息素过大时，式（4.23）会将其截断到上界，以防止该边在后续选择中形成“垄断”；当某条边上的信息素过小时，算法也会将其抬升到下界，以保留一定探索机会。MMAS 截断的实际意义在于让“高质量路径更容易被选中”与“其他可行路径仍然保有被探索机会”这两件事同时成立，从而在开发与探索之间取得更好的平衡。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    除信息素截断外，Improve 3 还采用了“代内精英 + 全局最优”的双重强化策略。即在每一轮迭代中，不是让全部蚂蚁都平均参与信息素增强，而是先筛选出当前代排名靠前的若干条高质量路径进行主要更新；同时，对当前全局历史最优解额外进行一次信息素强化。这样一来，算法既保留了当前代新发现优质解的影响，又不会轻易丢失长期搜索过程中积累下来的最优路径信息。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    从整个演化关系来看，Improve 2 更偏重于“构解阶段如何更聪明地选点”，Improve 3 更偏重于“更新阶段如何更稳定地积累信息素”。二者共同作用后，算法不仅能更合理地构造可行路径，也能在更长迭代过程中保持较好的稳定性和搜索深度。正因为如此，在论文中将 Improve 2 和 Improve 3 放在同一小节中介绍，是因为它们本质上属于同一条改进主线，即从参数与启发函数层面，再到信息素控制层面，逐步增强蚁群算法的稳定性与适应性。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    该组改进算法的文字版流程可概括为：首先继承 Improve 1 的异质蚁群结构；其次在每轮迭代开始时，依据当前迭代进度用式（4.21）计算自适应挥发率；然后在构解阶段用式（4.22）替代原有单一距离启发函数，使客户选择同时考虑距离、时间紧迫度和容量匹配度；在路径构造完成后，根据当前代优质路径和全局历史最优路径执行双重强化；最后对更新后的信息素矩阵利用式（4.23）进行 MMAS 上下界截断，并继续下一轮迭代。总体而言，Improve 2 与 Improve 3 使蚁群算法完成了从“异质种群搜索”向“自适应构解 + 稳定更新”的进一步升级。
+  </p>
+
+  <p style="margin:0pt; margin-top:11pt; margin-bottom:11pt; line-height:23pt; font-size:12pt; font-family:黑体; text-align:left;">
+    4.3.5 基于DBO外层调参的增强型蚁群算法（Improve 4）
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    尽管 Improve 2 和 Improve 3 已经在搜索机制上较为完善，但这些算法仍然存在一个根本问题，即关键参数依然主要依赖人工经验设定。对于不同配送中心内部的 VRPTW 子问题而言，客户数量、客户分布、车辆结构和时间窗紧张程度都可能差异较大，因此同一组参数往往难以在所有子问题上都取得理想效果。基于这一考虑，本文在 Improve 4 中引入 DBO 外层调参机制，使蚁群算法中的若干关键控制参数由蜣螂算法自动搜索，而不再完全依赖人工经验。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    与 4.3.2 中直接用于求解车辆路径问题的 DBO 不同，Improve 4 中的 DBO 并不直接构造客户访问序列，而是承担参数寻优器的角色。也就是说，外层 DBO 的个体不再表示路径解，而是表示一组蚁群控制参数。设单个参数向量表示为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\theta=(\alpha,\beta,\rho_{\min},\rho_{\max},\tau_{\min},\tau_{\max},\mu,\lambda,e) \qquad (4.24)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其中，$\alpha$ 表示信息素重要程度，$\beta$ 表示启发函数重要程度，$\rho_{\min}$ 和 $\rho_{\max}$ 用于描述挥发率变化范围，$\tau_{\min}$ 和 $\tau_{\max}$ 表示信息素边界，$\mu$ 表示变异概率，$\lambda$ 表示时间窗违约惩罚系数，$e$ 表示精英强化系数。对于 DBO 种群中的每一个个体，都需要把该参数向量输入到内层蚁群算法中，运行一次短预算求解，然后再根据得到的路径成本来评价该参数组合的优劣。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    设在参数向量 $\theta$ 下内层蚁群算法返回的路径成本为 $f(\theta)$，则 Improve 4 的外层目标可写为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\min_{\theta} G(\theta)=f(\theta) \qquad (4.25)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    考虑到蚁群算法本身具有随机性，如果仅以单次求解结果评价参数组合，就容易因为偶然出现的一次优解而造成误判。为此，Improve 4 在参数评价阶段通常采用短迭代、多次试跑的方式，将多次求解结果的均值作为该组参数的外层适应度。通过这一处理，DBO 搜索得到的参数更偏向于“整体有效”，而不是只在单次运行中偶然表现较好。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    从结构上看，Improve 4 已经明显形成“外层 DBO + 内层 ACO”的双层框架。外层 DBO 负责在参数空间中搜索更优参数组合，内层蚁群算法负责在当前参数条件下构造车场内 VRPTW 路径。两层之间通过“参数输入—成本反馈”的方式实现耦合。相比前几版算法，这种结构的最大价值在于：算法不再要求研究者提前凭经验确定所有参数，而是允许系统根据当前车场问题的具体结构自动寻找更适配的控制配置。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    但是，Improve 4 的参数调节本质上仍然属于“求解前调参”，即先由 DBO 给出一组较优参数，再由 ACO 使用这组参数完成完整求解。因此，它虽然已经实现了参数自动优化，但调参机制与路径构造机制之间仍然是相对松散的串联关系。这也是为什么在后续 Improve 5 中，本文进一步把 DBO 的控制思想推进到更深层次，从而形成真正意义上更强的超启发式结构。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    从算法定位看，Improve 4 是本文第二阶段改进体系中的一个重要过渡版本。它一方面继承了前面几版算法在异质种群、多因子启发和信息素边界控制方面的成果，另一方面又把 DBO 正式引入为参数优化器，使蚁群算法由“结构改进”进一步走向“结构改进 + 参数自适应”。这一点对于后续 Improve 5 的形成具有直接铺垫作用。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其文字版流程可以总结为：首先确定需要由 DBO 优化的蚁群关键参数集合，并随机生成若干组参数向量作为外层种群；其次将每组参数输入内层蚁群算法，执行短预算求解并返回对应路径成本；然后根据成本大小评价各参数向量优劣，并由 DBO 更新参数种群；重复“参数生成—内层求解—适应度评价”的过程，直到达到外层最大迭代次数；最后输出最优参数组合，并利用该参数驱动完整蚁群算法求解当前车场内 VRPTW 子问题。总体来看，Improve 4 的核心贡献在于实现了蚁群算法从“经验调参”到“外层智能调参”的过渡。
+  </p>
+</body>

@@ -1,0 +1,337 @@
+<body style="margin:0pt; padding:0pt; background-color:#ffffff;">
+  <p style="margin:0pt; margin-top:11pt; margin-bottom:11pt; line-height:23pt; font-size:12pt; font-family:黑体; text-align:left;">
+    4.3 第二阶段：车场内独立VRPTW路径优化设计
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在第一阶段完成客户—车场分配后，原始多配送中心问题被划分为若干个相互独立的单车场带时间窗车辆路径问题。第二阶段的任务是在给定客户集合、车辆类型、车辆容量、车辆速度、单位运输成本以及客户时间窗和车场营业时间的条件下，为每个车场分别构造若干条可行配送路径，并在满足容量约束和时间约束的前提下尽可能降低系统总成本。由于该问题属于典型的离散组合优化问题，本文在第二阶段主要采用蚁群算法及其改进算法进行求解，同时引入蜣螂算法和多蚁群协同机制，对不同求解策略进行比较与改进。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    与第一阶段的客户分配问题不同，第二阶段的优化对象已经由“客户归属关系”转变为“车场内部客户访问顺序及车辆路径组合”。因此，该阶段更关注路径构造过程中的状态转移、车辆选择、时间传播、信息素更新以及种群协同机制。本文按照“基础算法—单群体改进—多群体扩展”的思路，逐步构建第二阶段的路径优化方法体系。
+  </p>
+
+  <p style="margin:0pt; margin-top:11pt; margin-bottom:11pt; line-height:23pt; font-size:12pt; font-family:黑体; text-align:left;">
+    4.3.1 基础蚁群算法与异构车队适配
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    基础蚁群算法的思想来源于自然界蚂蚁群体通过信息素寻找最短路径的行为模式。在车辆路径问题中，可将每一个客户点视为图中的节点，节点之间的距离视为边权，蚂蚁在构造解的过程中依据信息素浓度和启发函数值逐步选择下一访问客户。经过多轮迭代后，优质路径上的信息素不断累积，从而引导种群逐步收敛到较优解。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    对于本文研究的车场内 VRPTW 子问题，传统蚁群算法需要进一步适配异构车队和时间窗约束。设当前蚂蚁位于节点 $i$，候选客户节点为 $j$，则基础状态转移概率可写为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$P_{ij}^{k}=\frac{\tau_{ij}^{\alpha}\eta_{ij}^{\beta}}{\sum\limits_{h\in \Omega_i^k}\tau_{ih}^{\alpha}\eta_{ih}^{\beta}} \qquad (4.8)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    式中，$\tau_{ij}$ 表示边 $(i,j)$ 上的信息素浓度，$\eta_{ij}$ 表示启发函数值，$\alpha$ 和 $\beta$ 分别表示信息素和启发函数的重要程度，$\Omega_i^k$ 表示蚂蚁 $k$ 在节点 $i$ 处的可行候选集合。在基础蚁群算法中，启发函数通常取为距离的倒数，即：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\eta_{ij}=\frac{1}{d_{ij}+\varepsilon} \qquad (4.9)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    为了适应异构车队，本文在每次构造新路径时，从当前配送中心的车辆池中依次选择仍有库存的车辆类型。设车辆 $r$ 的容量为 $Q_r$，速度为 $v_r$，单位成本为 $c_r$，则从当前节点 $i$ 到客户 $j$ 的到达时刻为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$t_j^{\mathrm{arr}}=t_i^{\mathrm{cur}}+\frac{d_{ij}}{v_r} \qquad (4.10)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    若客户 $j$ 的时间窗为 $[e_j,l_j]$，服务时间为 $s_j$，则开始服务时刻与完成服务时刻分别为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$t_j^{\mathrm{ser}}=\max(t_j^{\mathrm{arr}},e_j) \qquad (4.11)$$
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$t_j^{\mathrm{fin}}=t_j^{\mathrm{ser}}+s_j \qquad (4.12)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    若车辆服务客户 $j$ 后无法在车场关闭前返回配送中心，则该客户不能进入当前可行候选集合。设车场关闭时刻为 $L^d$，则需要满足：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$t_j^{\mathrm{fin}}+\frac{d_{j0}}{v_r}\leq L^d \qquad (4.13)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在路径成本计算中，本文同时考虑行驶成本和时间窗违约惩罚。若客户到达时间超过时间窗上限，则引入迟到惩罚项。单条路径的成本可表示为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$f_r=c_r\sum d_{ij}+\lambda \sum \max(0,t_j^{\mathrm{arr}}-l_j) \qquad (4.14)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    当所有蚂蚁完成构解后，对信息素进行挥发与增强，基础更新公式为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\tau_{ij}\leftarrow (1-\rho)\tau_{ij}+\sum_{k=1}^{m}\Delta \tau_{ij}^{k} \qquad (4.15)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其中，$\rho$ 为挥发系数，$\Delta \tau_{ij}^{k}$ 为蚂蚁 $k$ 在边 $(i,j)$ 上的信息素增量。基础蚁群算法构成了本文第二阶段所有改进算法的共同基础，后续改进均是在上述构解、约束判断和信息素更新框架上进行扩展。
+  </p>
+
+  <p style="margin:0pt; margin-top:11pt; margin-bottom:11pt; line-height:23pt; font-size:12pt; font-family:黑体; text-align:left;">
+    4.3.2 用于求解车辆路径问题的DBO算法（蜣螂算法）介绍
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    除蚁群算法外，本文还将蜣螂算法用于第二阶段车场内 VRPTW 子问题的求解。需要强调的是，本节介绍的 DBO 不同于 4.2.3 中用于求解多车场客户分配问题的 DBO。4.2.3 中的 DBO 主要优化车场权重和客户归属关系，其搜索对象是客户—车场分配结构；而本节中的 DBO 则直接面向车场内部车辆路径问题，其优化对象是客户访问顺序和路径组合，因此在编码方式、适应度函数以及可行性处理上均有所不同。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在本文中，DBO 个体表示一个车场内客户的访问序列。对于一个包含 $n$ 个客户的车场子问题，单个个体可编码为一个长度为 $n$ 的排列向量：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$X=(x_1,x_2,\dots,x_n) \qquad (4.16)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其中，$x_p$ 表示访问序列中第 $p$ 个被访问的客户编号。对该序列进行路径解码时，按照访问顺序依次尝试将客户插入当前车辆路径，若插入后违反容量约束或时间窗约束，则关闭当前路径并启用下一辆车辆。这样即可将一个排列解转化为一组具体的车辆路径。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    对于某一候选解，设共生成 $R$ 条车辆路径，第 $r$ 条路径的行驶距离为 $D_r$，对应车辆单位成本为 $c_r$，则其路径总代价写为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$F(X)=\sum_{r=1}^{R} c_r D_r+\lambda_1 \sum \max(0,\mathrm{load}_r-Q_r)+\lambda_2 \sum \max(0,t_j-l_j) \qquad (4.17)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    式中，第一项为路径距离成本，第二项为容量约束惩罚，第三项为时间窗违约惩罚，$\lambda_1$ 和 $\lambda_2$ 分别表示两类惩罚系数。当个体对应的路径方案满足所有约束时，惩罚项取 0。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    DBO 的种群由滚球个体、育雏个体、小蜣螂个体和偷窃个体组成。滚球个体主要围绕当前最优解进行推进，增强对优质区域的开发；育雏个体在当前优良解附近作局部扰动，以保持搜索细化能力；小蜣螂个体负责较大范围的扩散搜索，用于发现新的可行区域；偷窃个体则在优秀个体附近执行随机扰动，以帮助种群跳出局部最优。由于原始 DBO 更新公式主要针对连续空间，本文在处理路径排列时并不直接使用连续变量加减运算，而是将其思想转化为顺序交换、片段插入和子序列重排等离散扰动操作。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    车辆路径问题中的 DBO 求解步骤可概括为：首先随机生成若干客户访问序列并完成路径解码；其次根据式（4.17）计算个体适应度；然后按照不同个体角色对序列执行交换、插入、片段重组等更新操作；更新后重新解码路径并计算适应度；若新个体优于旧个体，则用新个体替换旧个体；重复上述过程，直到达到最大迭代次数或种群最优值不再明显变化为止。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    本节引入该算法的目的，一方面是验证蜣螂算法在车场内路径优化问题上的可行性，另一方面也为后续将 DBO 思想进一步融入蚁群算法改进提供对照基础。也就是说，本文后续部分改进蚁群算法并非完全独立于蜣螂算法，而是在种群分工、参数调节和搜索控制方面借鉴了本节 DBO 求解路径问题时所体现出的群体协同思想。
+  </p>
+
+  <p style="margin:0pt; margin-top:11pt; margin-bottom:11pt; line-height:23pt; font-size:12pt; font-family:黑体; text-align:left;">
+    4.3.3 融合DBO等级制度的异质变异蚁群算法（Improve 1）
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    基础蚁群算法中所有蚂蚁通常采用统一的参数设置和相同的构解方式，这样虽然便于实现，但容易使搜索行为趋于单一，进而导致前期探索不足或后期过早收敛。为此，本文在 Improve 1 中引入蜣螂算法中的等级制度思想，将蚂蚁群体划分为多个具有不同搜索偏好的角色，并为不同角色配置差异化的参数和扰动方式。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    本文将蚂蚁分为滚球组、育雏组、小蜣螂组和偷窃组四类。滚球组主要强化信息素作用，偏向于沿当前优质路径继续搜索；育雏组保持标准蚁群参数，承担主体搜索任务；小蜣螂组弱化信息素作用、强化启发函数作用，更倾向于执行局部贪婪搜索；偷窃组则在一定概率下直接随机选择候选客户，以增强种群跳出局部最优的能力。由此，同一代蚂蚁不再采用单一搜索策略，而是在不同角色之间形成“开发—探索”并存的异质化搜索结构。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    若第 $k$ 只蚂蚁属于某一特定等级，则其状态转移中所使用的参数 $\alpha_k$、$\beta_k$ 和变异概率 $\mu_k$ 不再相同。记其状态转移概率为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$P_{ij}^{k}=\frac{\tau_{ij}^{\alpha_k}\eta_{ij}^{\beta_k}}{\sum\limits_{h\in \Omega_i^k}\tau_{ih}^{\alpha_k}\eta_{ih}^{\beta_k}} \qquad (4.18)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    当蚂蚁属于偷窃组且触发变异时，不再依赖式（4.18）进行轮盘赌选择，而是直接从可行候选集合中随机选取下一客户。这一机制能够在后期打破高信息素边上的垄断现象，提高搜索多样性。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在信息素更新阶段，本文对前若干只滚球组蚂蚁所构造的路径给予更高权重。若第 $k$ 只蚂蚁属于滚球组，则其信息素增量在基础值上进一步放大。这样做的目的是使高质量路径能够更快地影响种群整体搜索方向。Improve 1 的提出，标志着本文正式将 DBO 的群体分工思想引入蚁群算法中，为后续参数自适应和多群体协同改进提供了基础。
+  </p>
+
+  <p style="margin:0pt; margin-top:11pt; margin-bottom:11pt; line-height:23pt; font-size:12pt; font-family:黑体; text-align:left;">
+    4.3.4 自适应参数、多因子启发与MMAS截断策略（Improve 2 与 Improve 3）
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在 Improve 1 的基础上，本文进一步从参数调节、启发函数设计以及信息素边界控制三个方面继续改进蚁群算法，形成 Improve 2 与 Improve 3 两个阶段性的增强版本。二者的共同目标是使算法前期保持更好的探索能力，后期提升稳定收敛效果，并在启发信息中更充分体现 VRPTW 问题的约束特征。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在 Improve 2 中，本文引入自适应参数思想。随着迭代次数增加，信息素挥发率和搜索强度按预设规则动态变化，使算法在前期更侧重全局探索、在后期更侧重局部开发。若当前迭代次数为 $t$，最大迭代次数为 $T$，则挥发率可表示为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\rho(t)=\rho_{\max}-(\rho_{\max}-\rho_{\min})\frac{t}{T} \qquad (4.19)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在启发函数设计上，Improve 2 不再仅使用距离倒数，而是引入距离、时间窗紧迫度和容量匹配度构造多因子启发信息。设客户 $j$ 的时间窗剩余松弛量为 $\mathrm{slack}_j$，当前车辆剩余容量为 $Q_r^{\mathrm{rem}}$，则可定义：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\eta_{ij}=\frac{1}{d_{ij}+\varepsilon}\left(1+\frac{\gamma_1}{\mathrm{slack}_j+\varepsilon}\right)\left(1+\gamma_2\frac{q_j}{Q_r^{\mathrm{rem}}+\varepsilon}\right) \qquad (4.20)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    这样构造后，算法在选择下一客户时不仅考虑“距离近”，也会优先关注“时间更紧迫”和“与当前车辆容量更匹配”的客户，从而提高构解过程对时间窗和容量约束的敏感性。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在 Improve 3 中，本文进一步引入 MMAS 最大最小信息素截断策略。若更新后某条边的信息素过大，则会导致种群过早集中；若过小，则几乎失去被选择的可能性。因此，对信息素执行如下截断：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\tau_{ij}\leftarrow \min\{\tau_{\max},\max(\tau_{\min},\tau_{ij})\} \qquad (4.21)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    同时，Improve 3 采用代内精英和全局最优双重强化方式，即在当前迭代排名靠前的若干只蚂蚁基础上，再对历史最优路径额外增强信息素。经过这两步改进后，算法在探索与开发之间取得了更好的平衡，也为后续引入 DBO 在线调参机制提供了良好基础。
+  </p>
+
+  <p style="margin:0pt; margin-top:11pt; margin-bottom:11pt; line-height:23pt; font-size:12pt; font-family:黑体; text-align:left;">
+    4.3.5 基于DBO外层调参的增强型蚁群算法（Improve 4）
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在前述改进中，蚁群算法虽然已经具备等级分工、自适应挥发率和信息素截断等机制，但核心参数仍主要依赖经验给定。由于不同车场内客户数量、客户分布和时间窗紧张程度存在差异，固定参数并不总能取得理想效果。为此，Improve 4 在蚁群算法外层引入 DBO 参数寻优机制，通过蜣螂算法自动搜索一组更适合当前车场子问题的控制参数。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在该算法中，DBO 个体不再表示客户访问序列，而是表示一组蚁群参数向量，如：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\theta=(\alpha,\beta,\rho_{\min},\rho_{\max},\tau_{\min},\tau_{\max},\mu,\lambda,e) \qquad (4.22)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其中，$\alpha$、$\beta$ 分别为信息素和启发函数权重，$\rho_{\min}$、$\rho_{\max}$ 为挥发率范围，$\tau_{\min}$、$\tau_{\max}$ 为信息素边界，$\mu$ 为变异概率，$\lambda$ 为时间窗惩罚系数，$e$ 为精英强化系数。对于每一组参数向量，系统运行一次短预算蚁群算法并以所得路径成本作为适应度值，然后由 DBO 继续更新参数向量。经过若干轮迭代后，输出最优参数组合，并据此运行完整蚁群算法。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    因此，Improve 4 的核心不是改变路径构造方式本身，而是通过 DBO 把“参数选择”上升为一个外层优化问题，使蚁群算法能够对不同子问题表现出更强的适应性。这一思路也为后续更进一步的 DBO 在线调参策略奠定了基础。
+  </p>
+
+  <p style="margin:0pt; margin-top:11pt; margin-bottom:11pt; line-height:23pt; font-size:12pt; font-family:黑体; text-align:left;">
+    4.3.6 基于DBO在线调参驱动的超启发式蚁群算法（Improve 5）（核心创新2）
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    Improve 5 是本文第二阶段路径优化中的核心改进算法。与 Improve 4 的“外层静态调参”相比，Improve 5 更进一步，将 DBO 的参数寻优思想与蚁群算法的路径构造过程紧密结合，使参数调节不再只是离线预处理，而成为驱动整个搜索过程的重要组成部分。因此，Improve 5 本质上是一种基于 DBO 在线调参驱动的超启发式蚁群算法。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    该算法总体上由两层结构组成。外层采用 DBO 对蚁群算法关键参数进行搜索，内层蚁群算法则利用当前参数组合完成车场内 VRPTW 路径构造。与传统蚁群算法相比，Improve 5 的特点不在于只改某一个局部机制，而在于将“参数—构解—反馈”这一闭环机制纳入统一优化框架。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在内层构解方面，Improve 5 保留了异质蚂蚁分工思想，同时进一步强化多因子启发函数。其启发项综合考虑距离、时间窗紧迫度和容量匹配度，可表示为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\eta_{ij}=\frac{1}{d_{ij}+\varepsilon}\left(1+\delta_1 \cdot \mathrm{urgency}_j\right)\left(1+\delta_2 \cdot \mathrm{fit}_{jr}\right) \qquad (4.23)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其中，$\mathrm{urgency}_j$ 表示客户 $j$ 的时间窗紧迫度，$\mathrm{fit}_{jr}$ 表示客户需求与当前车辆剩余容量之间的匹配度。这样构造后，蚂蚁在路径构造时不再仅根据距离进行贪婪搜索，而是更倾向于优先服务时间更紧、且更适合当前车辆承载状态的客户。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在信息素更新方面，Improve 5 采用代内精英筛选、滚球组加权强化和全局最优再增强的组合方式。若第 $k$ 只蚂蚁的路径成本为 $f_k$，则其基础信息素增量可表示为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\Delta \tau_{ij}^{k}=\frac{Q}{f_k} \qquad (4.24)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    若该蚂蚁属于滚球组或该路径为当代最优路径，则在式（4.24）基础上进一步乘以相应强化系数。这样可以使高质量路径在信息素矩阵中的影响更明显，从而加快优质结构的继承与扩散。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    外层 DBO 所优化的参数包括信息素权重、启发函数权重、挥发率、随机变异概率、时间窗惩罚系数和精英强化系数等。对于每组候选参数，系统采用短迭代、多次试跑方式获得评估值，以减小单次随机波动对参数评价的影响。设一组参数向量为 $\theta$，则其外层适应度可写为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$G(\theta)=\frac{1}{M}\sum_{u=1}^{M} f^{(u)}(\theta) \qquad (4.25)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其中，$f^{(u)}(\theta)$ 表示第 $u$ 次短跑试验下对应参数组合的路径成本。DBO 通过不断更新参数向量，最终输出适用于当前车场子问题的最优参数。与前几版改进相比，Improve 5 不再是单一机制增强，而是将多因子启发、分层搜索、精英强化和 DBO 自适应调参统一组织为一个超启发式框架。因此，本文将其作为第二阶段路径优化的核心创新算法。
+  </p>
+
+  <p style="margin:0pt; margin-top:11pt; margin-bottom:11pt; line-height:23pt; font-size:12pt; font-family:黑体; text-align:left;">
+    4.3.7 多蚁群协同与双信息素机制设计（Improve 6 与 Improve 6.2）
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在 Improve 5 之后，本文继续尝试从多群体协同角度提升搜索效果，并设计了 Improve 6 与 Improve 6.2 两个版本。其基本思想是将原本单一信息素矩阵下的蚁群搜索扩展为多个蚁群并行搜索，使不同蚁群分别承担不同的优化目标或搜索偏好，从而提升整体搜索多样性和解空间覆盖能力。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在 Improve 6 中，本文引入双蚁群系统。一个蚁群以总成本最小为主要优化目标，另一个蚁群则在评价函数中同时考虑车辆使用数量，希望在成本和车辆数之间取得更好平衡。对应地，系统维护两套信息素矩阵，分别记为 $\tau^{c}$ 和 $\tau^{v}$，前者服务于成本群，后者服务于车辆群。两群在同一代中独立构造解并各自更新信息素，随后再进行一定比例的信息共享。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    群间信息共享可表示为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\tau^{c}\leftarrow (1-\omega)\tau^{c}+\omega\tau^{v},\qquad \tau^{v}\leftarrow (1-\omega)\tau^{v}+\omega\tau^{c} \qquad (4.26)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其中，$\omega$ 表示信息交流比例。Improve 6 通过这种方式实现了多蚁群之间的经验共享，使搜索过程不再局限于单一目标导向。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在 Improve 6.2 中，本文进一步将 DBO 控制机制融入多蚁群系统内部。除了外层参数整定外，还设计了内层控制向量，对不同群体的 $\alpha$、$\beta$ 以及群间交流比例进行周期性调节，从而形成“外层 DBO 调宏观参数，内层 DBO 调群体控制参数”的双层结构。这样做的目的在于增强多群体系统在不同搜索阶段的适应能力，使其能够根据当前迭代状态自动调整开发与探索之间的平衡。
+  </p>
+
+  <p style="margin:0pt; margin-top:11pt; margin-bottom:11pt; line-height:23pt; font-size:12pt; font-family:黑体; text-align:left;">
+    4.3.8 引入异步交流与停滞重启机制的稳健多蚁群系统（Improve 6.3）
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    尽管 Improve 6 与 Improve 6.2 在多群体协同方面已经取得一定效果，但仍存在搜索停滞后群体间信息利用不充分的问题。为此，本文在 Improve 6.3 中进一步引入异步交流机制和停滞重启机制，构造更加稳健的多蚁群系统。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    所谓异步交流，是指不同蚁群之间的信息交换比例不再固定，而是随着迭代进程和搜索状态动态变化。在搜索前期，群间交流比例较低，以保留各群体的独立探索能力；在搜索后期，随着全局最优逐渐稳定，群间交流比例逐步提高，以增强信息共享和局部开发能力。若当前迭代进度为 $t/T$，则交流比例可表示为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\omega(t)=\omega_{\min}+(\omega_{\max}-\omega_{\min})\frac{t}{T} \qquad (4.27)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    当系统在连续若干代中未获得更优解时，认为算法进入停滞状态。此时，Improve 6.3 不直接完全重置搜索，而是采用软重启方式：一方面将两套信息素矩阵向中间水平回拉，避免已有优质信息完全丢失；另一方面对内层控制向量施加扰动，重新激活参数搜索能力。若信息素回拉系数为 $\kappa$，中间信息素水平为 $\tau^{m}$，则软重启过程可表示为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\tau \leftarrow \kappa \tau +(1-\kappa)\tau^{m} \qquad (4.28)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    此外，Improve 6.3 在构解阶段还引入了更强的开发概率控制，使部分蚂蚁在后期更倾向于直接选择当前候选集合中的最优节点，而不是完全依赖随机轮盘赌，从而增强后期稳定收敛效果。综合来看，Improve 6.3 在 Improve 6.2 的基础上进一步强化了多群体交流和停滞响应能力，体现出更明显的稳健优化特征。
+  </p>
+
+  <p style="margin:0pt; margin-top:11pt; margin-bottom:11pt; line-height:23pt; font-size:12pt; font-family:黑体; text-align:left;">
+    4.4 本章小结
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    本节围绕分解法第二阶段车场内独立 VRPTW 路径优化问题，系统介绍了基础蚁群算法、用于车辆路径问题的 DBO 算法以及一系列改进蚁群算法的设计思路与实现方法。首先，在基础蚁群算法部分，本文说明了异构车队和时间窗约束进入路径构造过程的方式，为后续改进算法建立了统一求解框架。随后，给出了 DBO 直接求解车场内路径问题的基本思路，并将其与前文用于客户分配的 DBO 明确区分。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在改进算法设计方面，本文依次介绍了融合 DBO 等级制度的异质变异蚁群算法、引入自适应参数、多因子启发和 MMAS 信息素截断的改进策略、基于 DBO 外层调参的增强型蚁群算法、基于 DBO 在线调参驱动的超启发式蚁群算法以及多蚁群协同系统与其稳健扩展版本。整体上看，这些方法体现了本文在第二阶段路径优化上的主要技术路线，即从单群体搜索逐步过渡到多群体协同，从固定参数逐步过渡到 DBO 驱动的自适应参数控制，并最终形成以 Improve 5 为核心、以 Improve 6.3 为高阶扩展的改进蚁群算法体系。后续章节将在此基础上，对不同方法的实验效果进行进一步分析。
+  </p>
+</body>

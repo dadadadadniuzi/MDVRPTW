@@ -1,0 +1,2 @@
+                  Method  Mean_Cost  Var_Cost  Std_Cost  Mean_Distance  Var_Distance  Std_Distance  Mean_Routes
+Improved6.2 DBO-MACS-ACO 470.194515  8.423432  2.902315     457.225533      7.840184      2.800033          8.0

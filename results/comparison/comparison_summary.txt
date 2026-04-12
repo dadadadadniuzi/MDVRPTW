@@ -1,0 +1,19 @@
+Phase 1 Comparison
+        Method  Total_Assignment_Distance    Depot_Loads Depot_Capacities  Total_Overload  Time_Feasible_Customers  Customer_Count
+  DBO + Repair                     594.90 90 / 125 / 113   90 / 130 / 120             0.0                       30              30
+           GAP                     598.19 88 / 121 / 119   90 / 130 / 120             0.0                       30              30
+Sweep + Repair                     618.59 90 / 118 / 120   90 / 130 / 120             0.0                       30              30
+    Exact MILP                     588.70 89 / 119 / 120   90 / 130 / 120             0.0                       30              30
+
+Phase 2 Comparison
+            Method          Type            Stage1_Basis  Route_Count  Total_Distance  Total_Cost  Avg_Load_Rate
+         ACO VRPTW Decomposition DBO + Repair allocation            8          455.76      468.10            NaN
+      Improved ACO Decomposition DBO + Repair allocation            8          451.64      463.71            NaN
+     Improved2 ACO Decomposition DBO + Repair allocation            8          472.18      485.67            NaN
+     Improved3 ACO Decomposition DBO + Repair allocation            8          452.32      464.46            NaN
+     Improved4 ACO Decomposition DBO + Repair allocation            8          476.04      490.49            NaN
+     Improved5 ACO Decomposition DBO + Repair allocation            8          450.95      461.67            NaN
+Improved6 MACS-ACO Decomposition DBO + Repair allocation            8          457.35      470.43            NaN
+         Whole ACO Whole-network        No stage-1 split            7          505.28     1200.10         0.9388
+         Whole DBO Whole-network        No stage-1 split            7          584.13     1381.29         0.8794
+Whole ACO Improve1 Whole-network        No stage-1 split            6          508.47     1243.91         0.9412

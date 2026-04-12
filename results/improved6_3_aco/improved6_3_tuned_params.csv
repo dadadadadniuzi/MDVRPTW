@@ -1,0 +1,4 @@
+Depot_ID,Tuned_Eval_Score,tau_min,tau_max,n_ball_ratio,n_brood_ratio,n_small_ratio,reset_mix,q0_min,q0_max,exchange_ratio_min,exchange_ratio_max,vehicle_count_penalty,cost_elite_boost,vehicle_elite_boost,rho_min,rho_max,mut_cost,mut_vehicle,adapt_interval,stagnation_window
+1,136.9687,0.05,6.5,0.2,0.4,0.2,0.78,0.65,0.92,0.066437,0.120721,11.151588,3.036842,1.58476,0.118537,0.256114,0.085025,0.095374,36,53
+2,179.4011,0.05,6.5,0.2,0.4,0.2,0.78,0.65,0.92,0.08,0.16,10.738446,3.4,2.064593,0.12,0.18,0.03,0.2,35,55
+3,155.9377,0.05,6.5,0.2,0.4,0.2,0.78,0.65,0.92,0.041675,0.118103,10.988915,2.729239,1.762323,0.092338,0.251968,0.049028,0.13267,30,73

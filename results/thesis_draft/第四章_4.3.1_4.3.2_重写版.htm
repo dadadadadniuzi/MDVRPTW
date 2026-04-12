@@ -1,0 +1,153 @@
+<body style="margin:0pt; padding:0pt; background-color:#ffffff;">
+  <p style="margin:0pt; margin-top:11pt; margin-bottom:11pt; line-height:23pt; font-size:12pt; font-family:黑体; text-align:left;">
+    4.3.1 基础蚁群算法与异构车队适配
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在第一阶段完成客户—车场分配后，原始多配送中心问题被拆分为若干个车场内独立的带时间窗车辆路径子问题。对于任一车场子问题，已知该车场所负责的客户集合、各客户需求量、各客户时间窗、车场营业时间以及车场内异构车辆池，第二阶段的任务就是在满足容量约束和时间约束的前提下，为这些客户构造若干条可行配送路径，并使总成本尽可能小。由于该问题同时具有路径组合优化和时空约束传播的特征，本文首先采用基础蚁群算法作为统一求解框架。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    蚁群算法的基本思想是模拟蚂蚁群体在搜索过程中依据信息素浓度逐步逼近优质路径的行为。对于车辆路径问题而言，可以将配送中心和客户点共同视为图中的节点，将节点间距离视为边权。每只蚂蚁在一次迭代中对应构造一个完整解，即从配送中心出发，按照某种概率规则依次选择尚未服务的客户，直到所有客户被访问完毕。多只蚂蚁并行构造解后，根据各解质量对路径上的信息素进行更新，使高质量解在下一轮迭代中更容易被继承。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在标准蚁群算法中，状态转移概率由信息素和启发函数共同决定。设当前蚂蚁位于节点 $i$，候选客户节点为 $j$，则其转移概率可表示为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$P_{ij}^{k}=\frac{\tau_{ij}^{\alpha}\eta_{ij}^{\beta}}{\sum\limits_{h\in \Omega_i^k}\tau_{ih}^{\alpha}\eta_{ih}^{\beta}} \qquad (4.8)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    式中，$\tau_{ij}$ 表示边 $(i,j)$ 上的信息素浓度，$\eta_{ij}$ 表示启发函数值，$\alpha$ 表示信息素重要程度，$\beta$ 表示启发函数重要程度，$\Omega_i^k$ 表示蚂蚁 $k$ 在节点 $i$ 处的可行候选客户集合。基础蚁群算法通常取启发函数为距离倒数：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\eta_{ij}=\frac{1}{d_{ij}+\varepsilon} \qquad (4.9)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    但是，本文研究的对象并不是传统的单车型、无时间窗车辆路径问题，而是带时间窗和异构车队约束的车场内 VRPTW 子问题。因此，若直接套用标准蚁群算法，就会出现两个明显问题：第一，标准状态转移仅关注节点间距离，无法反映车辆容量和时间窗可行性；第二，标准蚁群通常默认车辆同质，而本文中不同车辆具有不同容量、速度和单位运输成本，因此同一路径在不同车辆条件下对应的可行性和成本并不相同。基于这一点，本文在基础蚁群算法实现中，对车辆选择、候选集合构造和成本计算方式进行了针对性的适配。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在车辆选择方面，本文不再假定所有车辆完全一致，而是将每个车场的车辆池表示为若干种车辆模板，每种车辆具有数量、容量、速度和单位成本等属性。在构造路径时，算法首先从当前车场车辆池中选取一辆仍有库存的车辆作为当前执行车辆，并利用该车辆参数更新当前路径的容量状态与时间状态。设当前使用车辆类型为 $r$，其容量为 $Q_r$，速度为 $v_r$，单位运输成本为 $c_r$，则从当前节点 $i$ 前往客户 $j$ 的到达时刻为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$t_j^{\mathrm{arr}}=t_i^{\mathrm{cur}}+\frac{d_{ij}}{v_r} \qquad (4.10)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    若客户 $j$ 的时间窗为 $[e_j,l_j]$，服务时间为 $s_j$，则开始服务时刻与完成服务时刻分别为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$t_j^{\mathrm{ser}}=\max(t_j^{\mathrm{arr}},e_j) \qquad (4.11)$$
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$t_j^{\mathrm{fin}}=t_j^{\mathrm{ser}}+s_j \qquad (4.12)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在候选客户筛选阶段，除了要满足当前车辆剩余容量约束外，还必须满足客户服务后车辆能够在车场关闭前返回配送中心。设当前路径累计载重为 $q^{\mathrm{cur}}$，客户 $j$ 的需求量为 $q_j$，车场关闭时刻为 $L^d$，则客户 $j$ 能够进入候选集合需要同时满足：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$q^{\mathrm{cur}}+q_j\leq Q_r \qquad (4.13)$$
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$t_j^{\mathrm{fin}}+\frac{d_{j0}}{v_r}\leq L^d \qquad (4.14)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    由此可见，本文采用的基础蚁群算法并不是简单地在客户之间执行概率转移，而是在每一步构解前都先执行容量可行性和时间可行性检查，只有满足约束的客户才会进入式（4.8）中的可行候选集合 $\Omega_i^k$。这种处理方式的意义在于将大量明显不可行的扩展路径提前排除，从而减少无效搜索。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在路径成本计算方面，本文不单纯以配送总距离作为目标，而是考虑异构车辆单位成本和时间窗违约惩罚。设第 $r$ 条车辆路径的总行驶距离为 $D_r$，迟到总量为 $T_r^{\mathrm{late}}$，则路径成本可表示为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$f_r=c_rD_r+\lambda T_r^{\mathrm{late}} \qquad (4.15)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其中，$\lambda$ 表示时间窗惩罚系数。当车辆提前到达客户时，可等待至客户时间窗开启再开始服务；当车辆晚于客户时间窗上限到达时，则按照迟到时长施加惩罚。整个车场内子问题的总成本为所有车辆路径成本之和。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在信息素更新阶段，基础蚁群算法先对原有信息素进行挥发，再对本轮构造出的路径进行强化。更新公式写为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$\tau_{ij}\leftarrow (1-\rho)\tau_{ij}+\sum_{k=1}^{m}\Delta \tau_{ij}^{k} \qquad (4.16)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其中，$\rho$ 为挥发系数，$\Delta \tau_{ij}^{k}$ 表示蚂蚁 $k$ 在边 $(i,j)$ 上留下的信息素增量。通常将路径代价较低的解赋予更高的信息素增量，以增强其在下一轮迭代中的继承概率。这样，算法在不断重复“构解—评价—更新”的过程中逐步逼近较优路径组合。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    综合而言，本文基础蚁群算法的文字版流程可总结为：首先读取某一车场内的客户集合、车辆池和时间窗数据；其次初始化距离矩阵、信息素矩阵和启发矩阵；然后在每一代中由多只蚂蚁分别构造路径，在构造过程中逐步检查容量和时间窗可行性；完成构解后计算每只蚂蚁的总路径成本，并记录当前最优解；最后按照式（4.16）对信息素进行挥发与增强，并进入下一轮迭代，直到达到最大迭代次数或收敛条件为止。该算法构成了本文第二阶段所有改进算法的统一基础框架。
+  </p>
+
+  <p style="margin:0pt; margin-top:11pt; margin-bottom:11pt; line-height:23pt; font-size:12pt; font-family:黑体; text-align:left;">
+    4.3.2 用于求解车辆路径问题的DBO算法（蜣螂算法）介绍
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    除蚁群算法外，本文还尝试将蜣螂算法用于第二阶段车场内 VRPTW 子问题的求解。需要特别说明的是，本节中的蜣螂算法与 4.2.3 中用于求解多车场客户分配问题的蜣螂算法具有不同的求解对象。4.2.3 中的 DBO 主要用于优化车场权重和客户归属关系，其本质上是一个面向“客户—车场分配”的外层优化问题；而本节中的 DBO 则直接以“车场内部客户访问顺序和路径组合”为搜索对象，属于面向 VRPTW 子问题的离散路径优化方法。因此，本节需要单独对其编码方式、适应度函数、种群角色和搜索流程进行说明。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    对于车场内车辆路径问题，蜣螂算法首先需要解决的是“如何表示一个候选解”。本文采用排列编码方式，即将车场内所有客户按某种访问顺序排成一个序列。设该车场包含 $n$ 个客户，则单个蜣螂个体可以表示为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$X=(x_1,x_2,\dots,x_n) \qquad (4.17)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    其中，$x_p$ 表示访问序列中的第 $p$ 个客户编号。该序列本身还不是最终可执行路径，必须经过解码过程才能转化为若干条车辆路径。本文解码时采取顺序扫描策略：从配送中心出发，依次读取排列中的客户，将客户尝试插入当前车辆路径；若加入该客户后违反车辆容量约束或时间窗约束，则终止当前路径，启用下一辆可用车辆，并从该客户开始构造新路径。通过这一方式，一个长度为 $n$ 的排列向量被转化为一组满足约束的配送路径。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    设第 $r$ 条解码后路径的总行驶距离为 $D_r$，该路径所用车辆单位成本为 $c_r$，累计载重超限量为 $V_r$，时间窗违约总量为 $T_r$，则单个个体的适应度函数构造为：
+  </p>
+
+  <p style="margin:0pt; text-align:center; line-height:23pt; font-size:12pt; font-family:'Times New Roman';">
+    $$F(X)=\sum_{r=1}^{R}c_rD_r+\lambda_1\sum_{r=1}^{R}V_r+\lambda_2\sum_{r=1}^{R}T_r \qquad (4.18)$$
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    若某条路径满足容量约束和时间窗约束，则该路径对应的惩罚项为零；若存在超载或迟到现象，则按照超限程度和违约时长进行处罚。采用这种适应度函数的目的，是在保持主目标为总成本最小的同时，让算法能够自动区分可行解与不可行解，并优先向更优的可行区域收敛。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    从种群结构来看，蜣螂算法并不是简单地采用一个同质种群，而是根据个体功能划分为滚球个体、育雏个体、小蜣螂个体和偷窃个体四类。滚球个体主要承担跟随当前较优解、朝优良区域推进的任务，强调开发能力；育雏个体则围绕当前较优个体进行邻域扰动，属于局部细化搜索；小蜣螂个体在更大范围内扩展搜索区域，以维持种群多样性；偷窃个体则在优秀个体附近进行随机扰动，以帮助种群跳出局部最优。也就是说，蜣螂算法的核心并不只是“随机搜索”，而是利用不同角色个体在搜索空间中承担不同职责，从而实现全局探索和局部开发的协同。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    由于原始 DBO 主要面向连续空间优化，而车场内路径问题本质上属于排列组合优化问题，因此本文在实现时并不直接套用连续变量更新公式，而是将 DBO 的角色思想映射为离散扰动操作。对于滚球个体，本文主要采用“向当前最优解靠拢”的顺序调整方式，例如保留当前最优路径中的部分优质子序列，并对剩余部分重新排列；对于育雏个体，采用局部交换和局部插入操作，对当前排列进行细粒度调整；对于小蜣螂个体，则采用较大范围的片段重组或逆序操作，以扩大搜索半径；对于偷窃个体，则围绕最优个体随机执行片段替换或位置交换，增强随机扰动效果。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    在每次个体更新之后，算法都需要重新执行解码和适应度评估。也就是说，蜣螂算法在车辆路径问题中的核心循环不是简单的“位置更新”，而是“排列扰动—路径解码—适应度评价—优劣替换”。若新的排列向量经过解码后得到的成本小于旧个体，则用新个体替换旧个体；否则保留原个体。通过这种基于适应度比较的迭代更新，种群中的优质路径结构会逐步积累下来。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    从求解流程上看，本文用于车辆路径问题的 DBO 算法可以概括为以下几个步骤：首先初始化种群，随机生成若干个客户访问排列；其次对每个排列执行路径解码，并根据式（4.18）计算适应度；然后根据适应度对种群进行排序，识别当前全局最优个体；之后按照滚球、育雏、小蜣螂和偷窃四类个体的不同策略，对排列执行交换、插入、重排和片段重组等离散扰动操作；完成更新后重新解码并计算新个体适应度；若新个体优于旧个体，则执行替换；最后不断重复上述过程，直到达到最大迭代次数或最优值长期不再改善。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    为了使该算法流程表达得更加清晰，本文将其文字版流程总结如下。第一步，输入某车场客户集合、车辆池参数和时间窗数据，并随机生成初始种群。第二步，将每个个体表示的客户序列解码为若干条车辆路径，计算总距离、总成本以及约束惩罚。第三步，根据适应度值对种群进行排序，并更新当前全局最优个体。第四步，按角色对种群执行不同的离散更新操作，生成新一代候选解。第五步，对新解进行解码和评价，若优于原解则保留。第六步，当达到最大迭代次数或算法趋于稳定时，输出当前最优车辆路径方案。由此可见，本节 DBO 算法的重点在于通过种群角色分工和离散邻域扰动来实现车场内路径优化，这与前文用于多车场分配的 DBO 在求解目标和搜索空间上均有本质区别。
+  </p>
+
+  <p style="margin:0pt; text-indent:24pt; line-height:23pt; font-size:12pt; font-family:宋体; text-align:justify;">
+    本文在第二阶段单独介绍 DBO 算法的意义有两点。第一，它可以作为车场内路径优化的一种独立求解方法，为后续蚁群算法改进提供对照参考。第二，后续若干改进蚁群算法并不是凭空设计，而是在种群等级制度、角色分工、扰动搜索和参数控制等方面明显借鉴了蜣螂算法的思想。因此，明确给出 DBO 在路径问题中的求解方式，有助于解释后续改进算法的来源与演化关系，也使整章的技术路线更加完整。
+  </p>
+</body>

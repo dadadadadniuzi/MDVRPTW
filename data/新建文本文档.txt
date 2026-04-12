@@ -1,0 +1,5 @@
+Vehicles 表：必须包含 depot_id。
+
+TimeWindows 表：
+        id > 0: 客户时间窗。
+        id <= 0: 仓库时间窗（例如 id=0 对应 Depot 1, id=-1 对应 Depot 2... ，）。

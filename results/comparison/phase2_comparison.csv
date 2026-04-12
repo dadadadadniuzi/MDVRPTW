@@ -1,0 +1,13 @@
+Method,Type,Stage1_Basis,Route_Count,Total_Distance,Total_Cost,Avg_Load_Rate
+ACO VRPTW,Decomposition,DBO + Repair allocation,8,455.76,468.1,
+Improved ACO,Decomposition,DBO + Repair allocation,8,451.64,463.71,
+Improved2 ACO,Decomposition,DBO + Repair allocation,8,472.18,485.67,
+Improved3 ACO,Decomposition,DBO + Repair allocation,8,452.32,464.46,
+Improved4 ACO,Decomposition,DBO + Repair allocation,8,476.04,490.49,
+Improved5 ACO,Decomposition,DBO + Repair allocation,8,450.95,461.67,
+Improved6 MACS-ACO,Decomposition,DBO + Repair allocation,8,455.06,467.46,
+Improved6.2 DBO-MACS-ACO,Decomposition,DBO + Repair allocation,8,451.08,461.79,
+Improved6.3 Robust DBO-MACS-ACO,Decomposition,DBO + Repair allocation,8,457.35,470.43,
+Whole ACO,Whole-network,No stage-1 split,7,459.67,462.42,0.9388
+Whole DBO,Whole-network,No stage-1 split,9,504.95,522.95,0.8794
+Whole ACO Improve1,Whole-network,No stage-1 split,7,481.23,511.24,0.9412

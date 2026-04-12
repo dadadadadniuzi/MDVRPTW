@@ -1,0 +1,5 @@
+Whole DBO Summary
+Total routes: 9
+Best total cost: 522.95
+Total distance: 504.95
+Final convergence value: 522.95

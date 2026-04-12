@@ -1,0 +1,4 @@
+       Method  Mean_Cost   Var_Cost  Std_Cost  Mean_Distance  Var_Distance  Std_Distance  Mean_Routes
+Improved5 ACO 465.834157  20.928407  4.574758     453.838819     16.584994      4.072468          8.0
+Improved3 ACO 466.169078 115.094864 10.728227     454.386418     92.138706      9.598891          8.0
+ Improved ACO 468.339633  17.682367  4.205041     456.872085     17.798430      4.218819          8.0
