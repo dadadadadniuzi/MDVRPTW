@@ -1,0 +1,28 @@
+[1] [1] , Ǯ, , . ȺŻ㷨ʱ䴰ɫڳ·[J]. , 2025, 40(3): 745-754. DOI: 10. 13195/ j. kzyjc. 2024. 0202.
+[2] [2] , . ʱ䴰Ķ೵·ŻȺ㷨[J]. Ӧ, 2012, 48(27): 27-30.
+[3] [3] , , , . ˫ʱ䴰ԵĻ೵ͰڶɳŻ[J]. պѧѧ, 2025, 51(10): 3345-3353. DOI: 10. 13700/ j. bh. 1001-5965. 2023. 0579.
+[4] [4] ǿ, , ½, . Ż㷨೵·[J]. ִѧѧ(ѧ), 2025, 63(6): 1701-1712. DOI: 10. 13413/ j. cnki. jdxblxb. 2024282.
+[5] [5] . ĽŴ㷨Ĵʱ䴰·Ż[J/ OL]. Ƽͨ, 2025, 41(4): 36-41. http: / / dx. chinadoi. cn/ 10. 13774/ j. cnki. kjtb. 2025. 04. 005.
+[6] [6] , , Ծ, . ʱ䴰¶Ļϳӳ·Ż[J]. ϵͳ, 2023, 29(10): 3529-3546. DOI: 10. 13196/ j. cims. 2023. 10. 027.
+[7] [7] , Զ, ޺, . ʱ䴰ĳ·ĻȺŻ㷨[J]. ƹ, 2024, 32(6): 21-26. DOI: 10. 14022/ j. issn1674-6236. 2024. 06. 005.
+[8] [8] . ǳغʱ䴰ԼĶĿ·Ż[J]. й, 2025(5): 119. DOI: 10. 3969/ j. issn. 1005-0434. 2025. 05. 084.
+[9] [9] , , Ц, . ʱͶĴʱ䴰Ŀʽ·о[J]. йѧ, 2024, 32(1): 146-157. DOI: 10. 16381/ j. cnki. issn1003-207x. 2021. 0203.
+[10] [10] ǿ. ʱ䴰Լĳ·Ż[J]. йˮ, 2025(17): 154-157. DOI: 10. 13646/ j. cnki. 42-1395/ u. 2025. 17. 050.
+[11] [11] . Ӳʱ䴰ĳ·Ż㷨о[D]. : 콻ͨѧ, 2023.
+[12] [12] Haripriya K, Ganesan V K, Mohan U. Multi-objective Vehicle Routing Problem with Semi Soft Time Windows[C]/ / Industry 4. 0 and Advanced Manufacturing, Volume 2. 2025: 277-290.
+[13] [13] Birtolo C, Torre F. C2VRPTW: Assigning Capacity to Vehicles and Nodes in a Vehicle Routing Problem for Real-World Delivery Application[C]/ / Learning and Intelligent Optimization. 2025: 51-65.
+[14] [14] Yang F, Leus R. Scheduling hybrid flow shops with time windows[J]. Journal of heuristics, 2021, 27(1/ 2): 133-158. DOI: 10. 1007/ s10732-019-09425-w.
+[15] [15] An Exact Solution Framework for Multitrip Vehicle-Routing Problems with Time Windows[J]. Operations Research: The Journal of the Operations Research Society of America, 2020, 68(1): 180-198. DOI: 10. 1287/ opre. 2019. 1874.
+[16] [16] Сǿ, , , . Ⱥ͸ĽȺ㷨Ƽ[J]. , 2024, 45(6): 1797-1804. DOI: 10. 16208/ j. issn1000-7024. 2024. 06. 027.
+[17] [17] ű, ǿ. ڶ̬ѰȺ㷨ƶ·滮[J]. Ǳѧ, 2025, 46(3): 74-85. DOI: 10. 19650/ j. cnki. cjsi. J2513718.
+[18] [18] ̷, , , . ڸĽȺŴ㷨̺ͧ·滮[J]. , 2025, 47(6): 92-101. DOI: 10. 13788/ j. cnki. cbgc. 2025. 06. 12.
+[19] [19] Andreieva O, Zaiats V, Pavlichev A, et al. Ant Algorithm with Route Reservation[C]/ / 2023 IEEE 7th International Conference on Methods and Systems of Navigation and Motion Control: 7th IEEE International Conference on Methods and Systems of Navigation and Motion Control (MSNMC), 24-27 October 2023, Kyiv, Ukraine. 2023: 186-189.
+[20] [20] Abramov F, Serzhanov V, Reshetniak N, et al. Vector Ant Algorithm[C]/ / 2023 IEEE 13th International Conference on Electronics and Information Technologies: ELIT 2023, Lviv, Ukraine, 26-28 September 2023. 2023: 55-60.
+[21] [21] ʱά, , δ, . Ⱥ㷨˹Ƴƶ·滮[J]. ũҵеѧ, 2023, 54(12): 407-416. DOI: 10. 6041/ j. issn. 1000-1298. 2023. 12. 040.
+[22] [22] , Ժ. ڽȺ㷨ƶ·Ż[J]. , 2023, 38(3): 612-620. DOI: 10. 13195/ j. kzyjc. 2021. 1324.
+[23] [23] , κ־, , . ڸĽȺ㷨ʱ䴰ĳ·[J]. ϵͳ, 2023, 29(3): 1029-1039. DOI: 10. 13196/ j. cims. 2023. 03. 029.
+[24] [24] ɲ, ս, ˾, . Ⱥ㷨ƶ·滮еӦ[J]. Ӧ, 2020, 56(8): 10-19. DOI: 10. 3778/ j. issn. 1002-8331. 1912-0160.
+[25] [25] ƻ, ƺ, . ڸĽȺ㷨ĵ̼·о[J]. йѧ, 2021, 29(7): 118-127. DOI: 10. 16381/ j. cnki. issn1003-207x. 2018. 1405.
+[26] [26] , , , . ģʱ䴰ĳ·⼰Ŵ㷨[J]. ϵͳѧ, 2020, 29(1): 107-118. DOI: 10. 3969/ j. issn. 1005-2542. 2020. 01. 012.
+[27] [27] ﲨ, ƽ, ܸ, . ڸĽŴ㷨AGV·滮[J]. , 2020, 41(2): 550-556. DOI: 10. 16208/ j. issn1000-7024. 2020. 02. 038.
+[28] [28] , . ڻϽ㷨·[J]. , 2021, 36(9): 2161-2169. DOI: 10. 13195/ j. kzyjc. 2020. 0107.
